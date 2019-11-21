@@ -9,8 +9,8 @@ module AES_main(
 		);
 
    //parameters
-   parameter TOTAL_ROUNDS = 4'b1010;
-   parameter INIT_ROUND = 4'b0000;
+   parameter TOTAL_ROUNDS = 4'ha;
+   parameter INIT_ROUND = 4'h0;
    
    
    //registers
@@ -442,17 +442,17 @@ module AES_main(
       end
    endfunction // AddRoundKey
 
-   always@(posedge clk or negedge reset)
+   always@(posedge clk or posedge ready)// or negedge reset)
      begin
 	if (reset == 1'b0) //resets the outputs when reset=LOW
 	  begin
 	     o_block_reg <= 0;
 	     round_key_reg <= 0;
-	     round <= 0;
-	     
+	     round <= 4'b0000;
+	     	     
 	     rn_update <= 1'b0;
 	     finish <= 1'b0;
-	     ready <= 1'b1; //Nowhere except for here is ready set to 1
+	     ready <= 1'b1; //Nowhere except for here is 'ready' set to 1
 	     
 	  end
 	if (ready == 1'b1) //ready=HIGH indicates ready for next input block
@@ -463,7 +463,8 @@ module AES_main(
 	     ready <= 1'b0;
 	     
 	  end
-     end // always@ (posedge clk or negedge reset)
+     end // always@ (posedge clk or posedge ready)
+      
 
    always@*
      begin : round_block_update
@@ -500,21 +501,22 @@ module AES_main(
 	
      end
 
-   always@*
+   always@(rn_update, finish)
      begin : all_updates
-	if (rn_update) //This is probably not required
+	if (rn_update == 1'b1) //This is probably not required
 	  begin
-	     round = round + 4'b0001;
+	     rn_update = 1'b0;
+	     round = round + 1;
 	     
 	     round_key_reg = RoundKeyGenerator(round_key_old, round);
 	     block_reg = new_block_reg;
-	     	     
-	     rn_update = 1'b0;
 	  end
 	
-	if (finish)
-	  o_block_reg = new_block_reg;
-	
+	if (finish == 1'b1)
+	  begin
+	     o_block_reg = new_block_reg;
+	     finish = 1'b0;
+	  end
 	
      end
    
