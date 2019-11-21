@@ -447,6 +447,9 @@ module AES_main(
 	if (reset == 1'b0) //resets the outputs when reset=LOW
 	  begin
 	     o_block_reg <= 0;
+	     round_key_reg <= 0;
+	     round <= 0;
+	     
 	     rn_update <= 1'b0;
 	     finish <= 1'b0;
 	     ready <= 1'b1; //Nowhere except for here is ready set to 1
@@ -475,12 +478,14 @@ module AES_main(
 	if (round == INIT_ROUND)
 	  begin
 	     new_block_reg = ARK_init_block;
+	     round_key_old = init_key_reg;
 	     rn_update = 1'b1; //initiates the next always block
 	  end
 	
 	else if (round < TOTAL_ROUNDS)
 	  begin
 	     new_block_reg = ARK_main_block;
+	     round_key_old = round_key_reg;
 	     rn_update = 1'b1; //initiates the next always block
 	  end
 	
@@ -500,7 +505,7 @@ module AES_main(
 	if (rn_update) //This is probably not required
 	  begin
 	     round = round + 4'b0001;
-	     round_key_old = round_key_reg;
+	     
 	     round_key_reg = RoundKeyGenerator(round_key_old, round);
 	     block_reg = new_block_reg;
 	     	     
