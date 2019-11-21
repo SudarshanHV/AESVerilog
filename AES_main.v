@@ -2,23 +2,43 @@ module AES_main(
 	
        	input [127:0]  i_block,
        	input 	       clk,
-	input [127:0]  key,
+	input [127:0]  init_key,
 	input 	       reset, 
-	output [127:0] o_block
+	output [127:0] o_block,
+	output 	       block_finish
 		);
+
+   //parameters
+   parameter TOTAL_ROUNDS = 4'b1010;
+   parameter INIT_ROUND = 4'b0000;
+   
    
    //registers
+   reg [127:0] 	       block_reg;
+   reg [127:0] 	       new_block_reg;
    reg [127:0] 	       o_block_reg;
    reg [127:0] 	       i_block_reg;
-   
-   
+   reg [127:0] 	       BS_block, SR_block, MC_block;
+   reg [127:0] 	       ARK_init_block, ARK_main_block, ARK_final_block;
+   reg [127:0] 	       round_key_reg; //must find a way to update this reg
+   reg [127:0] 	       round_key_old;
+   reg [127:0] 	       init_key_reg;
+   reg [3:0] 	       round;
+   reg 		       rn_update;
+   reg 		       ready;
+   reg 		       finish;
+      
    
    //wires
+   wire [127:0]        round_key; //these wires are only useful if we plan on using a RoundKeyGenerator module.
 
+      
 
    //assigning outputs
    assign o_block = o_block_reg;
-   
+   assign block_finish = finish;
+      
+
    
    function [7:0] sbox (input [7:0] i_byte);
 
@@ -293,6 +313,20 @@ module AES_main(
 	 sbox = o_byte;
       end 
    endfunction // sbox
+
+   // IMPORTANT!!! The following function needs to be updated!
+   function [127:0] RoundKeyGenerator (
+				       input [127:0] input_key,
+				       input [3:0]   round_number
+				       );
+
+      begin
+	 RoundKeyGenerator = input_key;
+ 
+      end
+      
+   endfunction // RoundKeyGenerator
+   
    
    function [127:0] ByteSubstitution(input [127:0] data);
       
@@ -304,7 +338,6 @@ module AES_main(
 
       begin
 	 // The data is scrambled with respect to the S-Box byte-by-byte.
-	 sdata[7:0] = sbox(data[7:0]);
 	 sdata[7:0] = sbox(data[7:0]);
 	 sdata[15:8] = sbox(data[15:8]);
 	 sdata[23:16] = sbox(data[23:16]);	
@@ -328,8 +361,8 @@ module AES_main(
    
 
    function [127:0] ShiftRows(input [127:0] block);
-      reg [31:0]  w0,w1,w2,w3;
-      reg [31:0]  mw0,mw1,mw2,mw3;
+      reg [31:0]  w0, w1, w2, w3;
+      reg [31:0]  mw0, mw1, mw2, mw3;
 
       begin
 
@@ -354,7 +387,7 @@ module AES_main(
       end
    endfunction // gm2
 
-   function [7:0] gm3(input a);
+   function [7:0] gm3(input [7:0] a);
       begin
 	 gm3 = gm2(a) ^ a;
       end
@@ -362,7 +395,7 @@ module AES_main(
    
    
    function [31:0] MixWords(input [31:0] col);
-      reg   [7:0] b0,b1,b2,b3;
+      reg   [7:0] b0, b1, b2, b3;
       reg   [7:0] mb0, mb1, mb2, mb3;
       begin
 	 b0 = col[31:24];
@@ -402,9 +435,8 @@ module AES_main(
 
    function [127:0] AddRoundKey(
 	    input [127:0] block,
-	    input [3:0]   round); //must modify this function such that it responds to round number
-      reg [127:0] 	  round_key;
-      
+	    input [127:0] key); //must modify this function such that it responds to round number
+            
       begin
 	 AddRoundKey = block^key;
       end
@@ -412,26 +444,74 @@ module AES_main(
 
    always@(posedge clk or negedge reset)
      begin
-	if (reset == 1'b0)
+	if (reset == 1'b0) //resets the outputs when reset=LOW
 	  begin
-	     o_block_reg=0;
+	     o_block_reg <= 0;
+	     rn_update <= 1'b0;
+	     finish <= 1'b0;
+	     ready <= 1'b1; //Nowhere except for here is ready set to 1
+	     
 	  end
-	if (clk == 1'b1)
+	if (ready == 1'b1) //ready=HIGH indicates ready for next input block
 	  begin
 	     i_block_reg <= i_block;
+	     block_reg <= i_block;
+	     init_key_reg <= init_key;
+	     ready <= 1'b0;
+	     
 	  end
      end // always@ (posedge clk or negedge reset)
 
    always@*
-     begin
-	BS_block = ByteSubstitution(i_block);
+     begin : round_block_update
+	BS_block = ByteSubstitution(block_reg);
 	SR_block = ShiftRows(BS_block);
 	MC_block = MixColumns(SR_block);
 	
-	ARK_init_block = AddRoundKey(i_block, key); //change key
-	ARK_main_block = AddRoundKey(MC_block, key); //change key
-	ARK_final_block = AddRoundKey(SR_block, key);//change key
-	
-	
+	ARK_init_block = AddRoundKey(i_block_reg, init_key_reg); //change key
+	ARK_main_block = AddRoundKey(MC_block, round_key_reg);
+	ARK_final_block = AddRoundKey(SR_block, round_key_reg);
 
+	if (round == INIT_ROUND)
+	  begin
+	     new_block_reg = ARK_init_block;
+	     rn_update = 1'b1; //initiates the next always block
+	  end
+	
+	else if (round < TOTAL_ROUNDS)
+	  begin
+	     new_block_reg = ARK_main_block;
+	     rn_update = 1'b1; //initiates the next always block
+	  end
+	
+	else if (round == TOTAL_ROUNDS)
+	  begin
+	     new_block_reg = ARK_final_block;
+	     rn_update = 1'b1; //initiates the next always block
+	     finish = 1'b1;
+	     
+	  end
+		
+	
+     end
+
+   always@*
+     begin : all_updates
+	if (rn_update) //This is probably not required
+	  begin
+	     round = round + 4'b0001;
+	     round_key_old = round_key_reg;
+	     round_key_reg = RoundKeyGenerator(round_key_old, round);
+	     block_reg = new_block_reg;
+	     	     
+	     rn_update = 1'b0;
+	  end
+	
+	if (finish)
+	  o_block_reg = new_block_reg;
+	
+	
+     end
+   
+	
 endmodule
