@@ -314,18 +314,59 @@ module AES_main(
       end 
    endfunction // sbox
 
+
+//changes from Yashas starts
+
+   function automatic [31:0] Rcon(input [3:0]rc1);
+     	
+	case(rc1) //There might be a problem with the round numbers and case statement!!!
+		4'b0001: Rcon=32'h01_00_00_00;//Underscore used to improve readability of bytes.
+		4'b0010: Rcon=32'h02_00_00_00;
+		4'b0011: Rcon=32'h04_00_00_00;
+		4'b0100: Rcon=32'h08_00_00_00;
+		4'b0101: Rcon=32'h10_00_00_00;
+		4'b0110: Rcon=32'h20_00_00_00;
+		4'b0111: Rcon=32'h40_00_00_00;
+		4'b1000: Rcon=32'h80_00_00_00;
+		4'b1001: Rcon=32'h1b_00_00_00;//How to derive this?
+		4'b1010: Rcon=32'h36_00_00_00;
+	default: Rcon=32'h00_00_00_00;
+      	endcase
+  	endfunction
+
    // IMPORTANT!!! The following function needs to be updated!
    function [127:0] RoundKeyGenerator (
 				       input [127:0] input_key,
 				       input [3:0]   round_number
 				       );
 
+      reg [31:0] w0,w1,w2,w3,tem;
+      reg [127:0] outkey_reg;
+
       begin
-	 RoundKeyGenerator = input_key;
+	
+	w0=input_key[127:96];
+        w1=input_key[95:64];
+        w2=input_key[63:32];
+        w3=input_key[31:0]; 
+	 
+	tem[31:24] = sbox(w3[23:16]);
+  	tem[23:16] = sbox(w3[15:8]);
+        tem[15:8] = sbox(w3[7:0]);
+  	tem[7:0] = sbox(w3[31:24]);
+
+	outkey_reg[127:96] = w0^tem^Rcon(round_number);//The complicated one...
+  	outkey_reg[95:64] = outkey_reg[127:96]^w1;//Simple ones
+  	outkey_reg[63:32] = outkey_reg[95:64]^w2;
+  	outkey_reg[31:0] = outkey_reg[63:32]^w3;
+
+	RoundKeyGenerator = outkey_reg;
  
-      end
+      	end
       
    endfunction // RoundKeyGenerator
+   
+//changes from Yashas ends
    
    
    function [127:0] ByteSubstitution(input [127:0] data);
@@ -520,3 +561,5 @@ module AES_main(
    
 	
 endmodule
+
+//expected output = 51 ef 24 98 e6 a5 41 75 e6 e9 ba 5a d6 04 fa 38

@@ -318,7 +318,7 @@ module AES_main(
 
    function automatic [31:0] Rcon(input [3:0]rc1);
      	
-	case(rc1)
+	case(rc1) //There might be a problem with the round numbers and case statement!!!
 		4'b0000: Rcon=32'h01_00_00_00;//Underscore used to improve readability of bytes.
 		4'b0001: Rcon=32'h02_00_00_00;
 		4'b0010: Rcon=32'h04_00_00_00;
@@ -349,12 +349,12 @@ module AES_main(
         w2=input_key[63:32];
         w3=input_key[31:0]; 
 	 
-	tem[31:24] = sbox s1(w0[7:0]);
-  	tem[23:16] = sbox s2(w0[31:24]);
-        tem[15:8] = sbox s3(w0[23:16]);
-  	tem[7:0] = sbox s4(w0[15:8]);
+	tem[31:24] = sbox(w0[7:0]);
+  	tem[23:16] = sbox(w0[31:24]);
+        tem[15:8] = sbox(w0[23:16]);
+  	tem[7:0] = sbox(w0[15:8]);
 
-	outkey_reg[31:0] = w3^tem^Rcon(rc);//The complicated one...
+	outkey_reg[31:0] = w3^tem^Rcon(round_number);//The complicated one...
   	outkey_reg[63:32] = outkey_reg[31:0]^w2;//Simple ones
   	outkey_reg[95:64] = outkey_reg[63:32]^w1;
   	outkey_reg[127:96] = outkey_reg[95:64]^w0;
