@@ -1,9 +1,9 @@
 module AES_main(
-	
+
        	input [127:0]  i_block,
        	input 	       clk,
 	input [127:0]  init_key,
-	input 	       reset, 
+	input 	       reset,
 	output [127:0] o_block,
 	output 	       block_finish
 		);
@@ -11,8 +11,8 @@ module AES_main(
    //parameters
    parameter TOTAL_ROUNDS = 4'ha;
    parameter INIT_ROUND = 4'h0;
-   
-   
+
+
    //registers
    reg [127:0] 	       block_reg;
    reg [127:0] 	       new_block_reg;
@@ -27,19 +27,19 @@ module AES_main(
    reg 		       rn_update;
    reg 		       ready;
    reg 		       finish;
-      
-   
+
+
    //wires
    wire [127:0]        round_key; //these wires are only useful if we plan on using a RoundKeyGenerator module.
 
-      
+
 
    //assigning outputs
    assign o_block = o_block_reg;
    assign block_finish = finish;
-      
 
-   
+
+
    function [7:0] sbox (input [7:0] i_byte);
 
       //This module contains the S-box for the Byte Substitution step. 
@@ -309,16 +309,16 @@ module AES_main(
 	   8'hfe: o_byte=8'hbb;
 	   8'hff: o_byte=8'h16;
 	 endcase // case (i_byte)
-	 
+
 	 sbox = o_byte;
-      end 
+      end
    endfunction // sbox
 
 
 //changes from Yashas starts
 
    function automatic [31:0] Rcon(input [3:0]rc1);
-     	
+
 	case(rc1) //There might be a problem with the round numbers and case statement!!!
 		4'b0001: Rcon=32'h01_00_00_00;//Underscore used to improve readability of bytes.
 		4'b0010: Rcon=32'h02_00_00_00;
@@ -344,12 +344,12 @@ module AES_main(
       reg [127:0] outkey_reg;
 
       begin
-	
+
 	w0=input_key[127:96];
         w1=input_key[95:64];
         w2=input_key[63:32];
-        w3=input_key[31:0]; 
-	 
+        w3=input_key[31:0];
+
 	tem[31:24] = sbox(w3[23:16]);
   	tem[23:16] = sbox(w3[15:8]);
         tem[15:8] = sbox(w3[7:0]);
@@ -361,19 +361,19 @@ module AES_main(
   	outkey_reg[31:0] = outkey_reg[63:32]^w3;
 
 	RoundKeyGenerator = outkey_reg;
- 
+
       	end
-      
+
    endfunction // RoundKeyGenerator
-   
+
 //changes from Yashas ends
-   
-   
+
+
    function [127:0] ByteSubstitution(input [127:0] data);
-      
-      //Byte Substitution is the first step to encrypt the information. 
+
+      //Byte Substitution is the first step to encrypt the information.
       //The 128 bit data is divided into a 4x4 matrix where each element has 1 byte i.e. 8 bis of information.
-      
+
 
       reg [127:0] sdata;
 
@@ -381,25 +381,25 @@ module AES_main(
 	 // The data is scrambled with respect to the S-Box byte-by-byte.
 	 sdata[7:0] = sbox(data[7:0]);
 	 sdata[15:8] = sbox(data[15:8]);
-	 sdata[23:16] = sbox(data[23:16]);	
-	 sdata[31:24] = sbox(data[31:24]);	
-	 sdata[39:32] = sbox(data[39:32]); 
-	 sdata[47:40] = sbox(data[47:40]);	
-	 sdata[55:48] = sbox(data[55:48]);	
-	 sdata[63:56] = sbox(data[63:56]);	
-	 sdata[71:64] = sbox(data[71:64]);	
-	 sdata[79:72] = sbox(data[79:72]);	
-	 sdata[87:80] = sbox(data[87:80]);	
-	 sdata[95:88] = sbox(data[95:88]);	
+	 sdata[23:16] = sbox(data[23:16]);
+	 sdata[31:24] = sbox(data[31:24]);
+	 sdata[39:32] = sbox(data[39:32]);
+	 sdata[47:40] = sbox(data[47:40]);
+	 sdata[55:48] = sbox(data[55:48]);
+	 sdata[63:56] = sbox(data[63:56]);
+	 sdata[71:64] = sbox(data[71:64]);
+	 sdata[79:72] = sbox(data[79:72]);
+	 sdata[87:80] = sbox(data[87:80]);
+	 sdata[95:88] = sbox(data[95:88]);
 	 sdata[103:96] = sbox(data[103:96]);
 	 sdata[111:104] = sbox(data[111:104]);
 	 sdata[119:112] = sbox(data[119:112]);
 	 sdata[127:120] = sbox(data[127:120]);
-	 
+
 	 ByteSubstitution = sdata;
-      end   
+      end
    endfunction // ByteSubstitution
-   
+
 
    function [127:0] ShiftRows(input [127:0] block);
       reg [31:0]  w0, w1, w2, w3;
@@ -422,7 +422,7 @@ module AES_main(
    endfunction // ShiftRows
 
    function [7:0] gm2(input [7:0] a);
-      
+
       begin
 	 gm2 = {a[6:0],1'b0} ^ (8'h1b & {8{a[7]}});
       end
@@ -433,8 +433,8 @@ module AES_main(
 	 gm3 = gm2(a) ^ a;
       end
    endfunction // gm3
-   
-   
+
+
    function [31:0] MixWords(input [31:0] col);
       reg   [7:0] b0, b1, b2, b3;
       reg   [7:0] mb0, mb1, mb2, mb3;
@@ -450,9 +450,9 @@ module AES_main(
 	 mb3 = gm3(b0) ^ b1 ^ b2 ^ gm2(b3);
 
 	 MixWords = {mb0, mb1, mb2, mb3};
-	 
+
       end
-      
+
    endfunction // MixWords
 
    function [127:0] MixColumns(input [127:0] block);
@@ -470,98 +470,100 @@ module AES_main(
 	 mw3 = MixWords(w3);
 
 	 MixColumns = {mw0, mw1, mw2, mw3};
-	 
+
       end
    endfunction // MixColumns
 
    function [127:0] AddRoundKey(
 	    input [127:0] block,
 	    input [127:0] key); //must modify this function such that it responds to round number
-            
+
       begin
 	 AddRoundKey = block^key;
       end
    endfunction // AddRoundKey
 
-   always@(posedge clk or posedge ready)// or negedge reset)
+   always@(posedge clk or negedge reset)
      begin
-	if (reset == 1'b0) //resets the outputs when reset=LOW
-	  begin
-	     o_block_reg <= 0;
-	     round_key_reg <= 0;
-	     round <= 4'b0000;
-	     	     
-	     rn_update <= 1'b0;
-	     finish <= 1'b0;
-	     ready <= 1'b1; //Nowhere except for here is 'ready' set to 1
-	     
-	  end
-	if (ready == 1'b1) //ready=HIGH indicates ready for next input block
-	  begin
-	     i_block_reg <= i_block;
-	     block_reg <= i_block;
-	     init_key_reg <= init_key;
-	     ready <= 1'b0;
-	     
-	  end
+	      if (reset == 1'b0) //resets the outputs when reset=LOW
+	        begin
+	           o_block_reg <= 0;
+	           round_key_reg <= 0;
+	           round <= 4'b1011;
+
+	           rn_update <= 1'b0;
+	           finish <= 1'b0;
+	           ready <= 1'b1; //Nowhere except for here is 'ready' set to 1
+
+	        end
+	      if (ready == 1'b1 && clk == 1'b1) //ready=HIGH indicates ready for next input block
+	        begin
+	           i_block_reg <= i_block;
+	           block_reg <= i_block;
+	           init_key_reg <= init_key;
+	           ready <= 1'b0;
+	           round <= 4'b0000;
+	           rn_update <= 1'b0;
+
+	        end
      end // always@ (posedge clk or posedge ready)
-      
+
 
    always@*
      begin : round_block_update
-	BS_block = ByteSubstitution(block_reg);
-	SR_block = ShiftRows(BS_block);
-	MC_block = MixColumns(SR_block);
-	
-	ARK_init_block = AddRoundKey(i_block_reg, init_key_reg); //change key
-	ARK_main_block = AddRoundKey(MC_block, round_key_reg);
-	ARK_final_block = AddRoundKey(SR_block, round_key_reg);
+	      BS_block = ByteSubstitution(block_reg);
+	      SR_block = ShiftRows(BS_block);
+	      MC_block = MixColumns(SR_block);
 
-	if (round == INIT_ROUND)
-	  begin
-	     new_block_reg = ARK_init_block;
-	     round_key_old = init_key_reg;
-	     rn_update = 1'b1; //initiates the next always block
-	  end
-	
-	else if (round < TOTAL_ROUNDS)
-	  begin
-	     new_block_reg = ARK_main_block;
-	     round_key_old = round_key_reg;
-	     rn_update = 1'b1; //initiates the next always block
-	  end
-	
-	else if (round == TOTAL_ROUNDS)
-	  begin
-	     new_block_reg = ARK_final_block;
-	     rn_update = 1'b1; //initiates the next always block
-	     finish = 1'b1;
-	     
-	  end
-		
-	
+	      ARK_init_block = AddRoundKey(i_block_reg, init_key_reg); //change key
+	      ARK_main_block = AddRoundKey(MC_block, round_key_reg);
+	      ARK_final_block = AddRoundKey(SR_block, round_key_reg);
+
+	      if (round == INIT_ROUND)
+	        begin
+	           new_block_reg = ARK_init_block;
+	           round_key_old = init_key_reg;
+	           rn_update = 1'b1; //initiates the next always block
+	        end
+
+	      else if (round < TOTAL_ROUNDS)
+	        begin
+	           new_block_reg = ARK_main_block;
+	           round_key_old = round_key_reg;
+	           rn_update = 1'b1; //initiates the next always block
+	        end
+
+	      else if (round == TOTAL_ROUNDS)
+	        begin
+	           new_block_reg = ARK_final_block;
+	           //rn_update = 1'b1; //initiates the next always block
+	           finish = 1'b1;
+	        end
+
      end
 
    always@(rn_update, finish)
      begin : all_updates
-	if (rn_update == 1'b1) //This is probably not required
-	  begin
-	     rn_update = 1'b0;
-	     round = round + 1;
-	     
-	     round_key_reg = RoundKeyGenerator(round_key_old, round);
-	     block_reg = new_block_reg;
-	  end
-	
-	if (finish == 1'b1)
-	  begin
-	     o_block_reg = new_block_reg;
-	     finish = 1'b0;
-	  end
-	
+	      if (rn_update == 1'b1) //This is probably not required
+	        begin
+	           rn_update = 1'b0;
+	           round = round + 1;
+
+	           round_key_reg = RoundKeyGenerator(round_key_old, round);
+	           block_reg = new_block_reg;
+	        end
+
+	      if (finish == 1'b1)
+	        begin
+             round = 4'b1011;
+	           o_block_reg = new_block_reg;
+             ready = 1'b1;
+	           finish = 1'b0;
+	        end
+
      end
-   
-	
+
+
 endmodule
 
 //expected output = 51 ef 24 98 e6 a5 41 75 e6 e9 ba 5a d6 04 fa 38
