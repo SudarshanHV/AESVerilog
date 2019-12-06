@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module RoundKeyGenerator(rc,inkey,outkey);
   input[3:0] rc;
   input[127:0] inkey;
@@ -25,8 +26,8 @@ module RoundKeyGenerator(rc,inkey,outkey);
   //Step three and further progress.
   assign outkey[127:96]= w0^tem^Rcon(rc);//The complicated one...
   assign outkey[95:64]= w0^tem^Rcon(rc)^w1;//Simple ones
-  assign outkey[95:64]= w0^tem^Rcon(rc)^w1^w2;
-  assign outkey[95:64]= w0^tem^Rcon(rc)^w1^w2^w3;
+  assign outkey[63:32]= w0^tem^Rcon(rc)^w1^w2;
+  assign outkey[31:0]= w0^tem^Rcon(rc)^w1^w2^w3;
   
 
 //Function to generate round constant depending on the round number.

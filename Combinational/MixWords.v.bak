@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module MixWords(w,mw);
 input [31:0] w;
 output [31:0] mw;

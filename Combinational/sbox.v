@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module sbox(a,c);
 
 //This module contains the S-box for the Byte Substitution step. 

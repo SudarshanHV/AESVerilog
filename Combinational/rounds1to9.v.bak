@@ -11,9 +11,9 @@ output [127:0]rndout;
 wire [127:0] sb,sr,mcl;
 
 RoundKeyGenerator t0(.rc(rc),.inkey(keyin),.outkey(keyout));
-//initial begin
-//$monitor("%d ",keyout);
-//end
+initial begin
+$monitor("%d ",keyout);
+end
 ByteSubstitution t1(.data(data),.scramble(sb));
 ShiftRows t2(.i_block(sb),.o_block(sr));
 MixColumns t3(.i_block(sr),.o_block(mcl));

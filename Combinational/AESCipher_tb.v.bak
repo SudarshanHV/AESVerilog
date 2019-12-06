@@ -2,7 +2,7 @@
 
 module AesCipher_tb;
    reg          clk;
-   reg [127:0]  i_block, key;
+   wire [127:0]  i_block, key;
    wire [127:0] o_block;
    initial
      begin

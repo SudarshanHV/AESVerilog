@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module ByteSubstitution(data, scramble);
 
 //Byte Substitution is the first step to encrypt the information.
