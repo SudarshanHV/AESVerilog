@@ -5,7 +5,7 @@ module MixColumns(
   
    wire [31:0] w0,w1,w2,w3;
    wire [31:0] mw0,mw1,mw2,mw3;
-   //reg [127:0] o_block_reg;
+   reg [127:0] o_block_reg;
 
 	assign w0 = i_block[127:96];
 	assign w1 = i_block[95:64];

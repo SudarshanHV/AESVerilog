@@ -23,6 +23,6 @@ module AesCipher(clk,datain,key,dataout);
     rounds1to9 r7(.clk(clk),.rc(4'b0110),.data(r6_out),.keyin(keyout6),.keyout(keyout7),.rndout(r7_out));
     rounds1to9 r8(.clk(clk),.rc(4'b0111),.data(r7_out),.keyin(keyout7),.keyout(keyout8),.rndout(r8_out));
     rounds1to9 r9(.clk(clk),.rc(4'b1000),.data(r8_out),.keyin(keyout8),.keyout(keyout9),.rndout(r9_out));
-    RoundTen r10(.clk(clk),.rc(4'b1001),.rin(r9_out),.keylastin(keyout9),.fout(dataout));
+    roundlast r10(.clk(clk),.rc(4'b1001),.rin(r9_out),.keylastin(keyout9),.fout(dataout));
     
 endmodule

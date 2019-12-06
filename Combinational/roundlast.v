@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module rounndlast(clk,rc,rin,keylastin,fout);
+module roundlast(clk,rc,rin,keylastin,fout);
 input clk;
 input [3:0]rc;
 input [127:0]rin;

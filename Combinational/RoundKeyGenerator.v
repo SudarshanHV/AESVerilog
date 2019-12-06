@@ -16,10 +16,10 @@ module RoundKeyGenerator(rc,inkey,outkey);
   //Three: XOR with round constant.
 
   //Step one and two.
-  sbox s1(.in(w3[23:16]),.out(tem[31:24]));
-  sbox s2(.in(w3[15:8]),.out(tem[23:16]));
-  sbox s3(.in(w3[7:0]),.out(tem[15:8]));
-  sbox s4(.in(w3[31:24]),.out(tem[7:0]));
+  sbox s1(.a(w3[23:16]),.c(tem[31:24]));
+  sbox s2(.a(w3[15:8]),.c(tem[23:16]));
+  sbox s3(.a(w3[7:0]),.c(tem[15:8]));
+  sbox s4(.a(w3[31:24]),.c(tem[7:0]));
 
 
   //Step three and further progress.
