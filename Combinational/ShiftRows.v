@@ -1,6 +1,6 @@
 module ShiftRows(
-		 input wire [127:0] i_block;
-		 output wire [127:0] o_block;
+		 input wire [127:0] i_block,
+		 output wire [127:0] o_block
 		 );
 
    reg [31:0]            w0,w1,w2,w3;
@@ -10,10 +10,10 @@ module ShiftRows(
    assign o_block = o_block_reg;
 
    initial begin
-	    w0 = block[127:96];
-	    w1 = block[95:64];
-	    w2 = block[63:32];
-	    w3 = block[31:0];
+	    w0 = i_block[127:96];
+	    w1 = i_block[95:64];
+	    w2 = i_block[63:32];
+	    w3 = i_block[31:0];
 
 	    mw0 = {{w0[31:24]},{w1[23:16]},{w2[15:8]},{w3[7:0]}};
 	    mw1 = {{w1[31:24]},{w2[23:16]},{w3[15:8]},{w0[7:0]}};

@@ -10,7 +10,8 @@ module AES_encry(input [127:0]i_block,input clk,input [127:0]key,output [127:0]o
 
 //Generation of state array
 
-	AddAroundRound AAR1(.i_block(i_block),.key(state_Key),.o_block(state));
+	//AddAroundRound AAR1(.i_block(i_block),.key(state_Key),.o_block(state));
+	assign state=i_block^state_Key;
 
 //1st to 9th round on State Array
 
@@ -26,7 +27,8 @@ module AES_encry(input [127:0]i_block,input clk,input [127:0]key,output [127:0]o
 
 			RoundKeyGenerator RKG1(.rc(count), .inkey(state_Key), .outkey(state_RoundKeyGen));
 
-			AddAroundRound AAR1(.i_block(state_MixColumn),.key(state_RoundKeyGen),.o_block(state));
+			//AddAroundRound AAR1(.i_block(state_MixColumn),.key(state_RoundKeyGen),.o_block(state));
+			state=state_MixColumn^state_RoundKeyGen;
 
 				   end
 
@@ -43,7 +45,8 @@ module AES_encry(input [127:0]i_block,input clk,input [127:0]key,output [127:0]o
 
 	RoundKeyGenerator RKG2(.rc(count), .inkey(state_Key), .outkey(state_RoundKeyGen));
 
-	AddAroundRound AAR2(.i_block(state_ShiftRow),.key(state_RoundKeyGen),.o_block(state));
+	//AddAroundRound AAR2(.i_block(state_ShiftRow),.key(state_RoundKeyGen),.o_block(state));
+	state=state_ShiftRow^state_RoundKeyGen;
 
 //Assigning the cypher state array to output
 

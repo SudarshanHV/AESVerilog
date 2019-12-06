@@ -1,6 +1,6 @@
 module MixColumns(
-		 input wire [127:0] i_block;
-		 output wire [127:0] o_block;
+		 input wire [127:0] i_block,
+		 output wire [127:0] o_block
 		 );
   
    reg [31:0] w0,w1,w2,w3;
@@ -10,10 +10,10 @@ module MixColumns(
    assign o_block = o_block_reg;
 
    initial begin
-	    w0 = block[127:96];
-	    w1 = block[95:64];
-	    w2 = block[63:32];
-	    w3 = block[31:0];
+	    w0 = i_block[127:96];
+	    w1 = i_block[95:64];
+	    w2 = i_block[63:32];
+	    w3 = i_block[31:0];
 
 	    mw0 = MixW(w0);
 	    mw1 = MixW(w1);
@@ -37,7 +37,7 @@ module MixColumns(
    endfunction // gm3
    
    
-   function [31:0] MixW(input [31:0] col);
+   function [31:0] MixWords(input [31:0] col);
       reg   [7:0] b0,b1,b2,b3;
       reg [7:0]   mb0, mb1, mb2, mb3;
       begin
