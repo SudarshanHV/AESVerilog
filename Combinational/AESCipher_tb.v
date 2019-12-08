@@ -16,6 +16,8 @@ module AesCipher_tb;
    always
      begin
         #1 i_block = i_block + 1'b1;
+	$display("%lld",i_block);
+	$display("%lld",o_block);
      end
 
 endmodule
