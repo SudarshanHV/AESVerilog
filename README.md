@@ -21,3 +21,10 @@ Inputs:
 	-Clock
 Outputs:
 	-128-bit output block
+
+## Collaborators
+
+Prabhat Reddy
+Sudarshan H V
+Umaeshwar Shankar
+Yashas S V
