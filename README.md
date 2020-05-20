@@ -24,7 +24,7 @@ Outputs:
 
 ## Collaborators
 
-Prabhat Reddy
-Sudarshan H V
-Umaeshwar Shankar
-Yashas S V
+-Prabhat Reddy
+-Sudarshan H V
+-Umaeshwar Shankar
+-Yashas S V
